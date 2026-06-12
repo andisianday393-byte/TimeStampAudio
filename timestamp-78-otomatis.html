@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timestamp Otomatis - Tekan SPASI</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: #1a202c;
+            color: #e2e8f0;
+        }
+        .controls { 
+            margin: 10px 0; 
+            padding: 30px; 
+            background: #2d3748; 
+            border-radius: 10px;
+            text-align: center;
+        }
+        button { 
+            padding: 15px 30px; 
+            margin: 10px; 
+            font-size: 18px; 
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+        }
+        .record-btn { 
+            background: #4fd1c5; 
+            color: #1a202c;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .timestamp-list { 
+            margin-top: -20px; 
+            max-height: 400px; 
+            overflow-y: auto;
+            text-align: center
+        }
+        .timestamp-item { 
+            padding: 12px; 
+            margin: 8px 0; 
+            background: #4a5568; 
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #currentTime { 
+            font-size: 48px; 
+            font-weight: bold; 
+            color: #4fd1c5;
+            font-family: monospace;
+        }
+        .hint {
+            background: #ecc94b;
+            color: #1a202c;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-top: -10px">🎵 Timestamp Otomatis - Juz 30</h1>
+    
+    <div class="hint">
+        ⌨️ Tekan SPASI setiap kali ayat baru dimulai!
+    </div>
+    
+    <div class="controls">
+
+    <div style="margin-bottom:20px;">
+    <label><strong>Pilih Surah:</strong></label><br><br>
+
+    <select id="surahId" onchange="loadSurah()"
+        style="
+            width:100%;
+            max-width:350px;
+            padding:12px;
+            font-size:16px;
+            border-radius:8px;
+            border:none;
+            background:#4a5568;
+            color:white;
+        ">
+        
+        <option value="78">78 - An-Naba'</option>
+        <option value="79">79 - An-Nazi'at</option>
+        <option value="80">80 - 'Abasa</option>
+        <option value="81">81 - At-Takwir</option>
+        <option value="82">82 - Al-Infitar</option>
+        <option value="83">83 - Al-Mutaffifin</option>
+        <option value="84">84 - Al-Insyiqaq</option>
+        <option value="85">85 - Al-Buruj</option>
+        <option value="86">86 - At-Tariq</option>
+        <option value="87">87 - Al-A'la</option>
+        <option value="88">88 - Al-Ghasyiyah</option>
+        <option value="89">89 - Al-Fajr</option>
+        <option value="90">90 - Al-Balad</option>
+        <option value="91">91 - Asy-Syams</option>
+        <option value="92">92 - Al-Lail</option>
+        <option value="93">93 - Ad-Duha</option>
+        <option value="94">94 - Asy-Syarh</option>
+        <option value="95">95 - At-Tin</option>
+        <option value="96">96 - Al-'Alaq</option>
+        <option value="97">97 - Al-Qadr</option>
+        <option value="98">98 - Al-Bayyinah</option>
+        <option value="99">99 - Az-Zalzalah</option>
+        <option value="100">100 - Al-'Adiyat</option>
+        <option value="101">101 - Al-Qari'ah</option>
+        <option value="102">102 - At-Takasur</option>
+        <option value="103">103 - Al-'Asr</option>
+        <option value="104">104 - Al-Humazah</option>
+        <option value="105">105 - Al-Fil</option>
+        <option value="106">106 - Quraisy</option>
+        <option value="107">107 - Al-Ma'un</option>
+        <option value="108">108 - Al-Kausar</option>
+        <option value="109">109 - Al-Kafirun</option>
+        <option value="110">110 - An-Nasr</option>
+        <option value="111">111 - Al-Lahab</option>
+        <option value="112">112 - Al-Ikhlas</option>
+        <option value="113">113 - Al-Falaq</option>
+        <option value="114">114 - An-Nas</option>
+
+    </select>
+</div>
+
+        <audio id="audio" style="width: 100%; margin: 20px 0;"></audio>
+        
+        <div style="margin: 20px 0;">
+            <strong>Waktu Saat Ini:</strong><br>
+            <span id="currentTime">00:00</span>
+        </div>
+
+        <div>
+            <button onclick="playPause()" id="playPauseBtn">▶ Play</button>
+            <button onclick="recordTimestamp()" class="record-btn">📍 CATAT (SPASI)</button>
+            <button onclick="resetTimestamps()" style="background: #f56565; color: white;">🔄 Reset</button>
+        </div>
+        <div style="margin-top: 15px;">
+            <strong>Total Ayat Tercatat:</strong> <span id="countAyat">0</span>
+        </div>
+    </div>
+
+    <div class="timestamp-list">
+        <h3>📝 Timestamp yang Tercatat:</h3>
+        <div id="timestamps"></div>
+    </div>
+    
+    <div style="margin-top:-5px;">
+        <strong>Durasi Audio:</strong><br>
+        <span id="duration">00:00</span>
+    </div>
+<div style="display:flex; justify-content:center;">
+    <button onclick="exportJSON()" 
+        style="background:#48bb78; color:white; padding:20px 40px; font-size:18px;">
+        💾 Download JSON
+    </button>
+</div>
+
+    <script>
+      let currentSurahId = 78;
+
+function loadSurah() {
+    currentSurahId = parseInt(
+        document.getElementById('surahId').value
+    );
+
+    const fileNumber = currentSurahId - 77;
+
+    audio.pause();
+    audio.currentTime = 0;
+
+    audio.src = `audio/${currentSurahId}-${fileNumber}.m4a`;
+
+    document.querySelector('h1').textContent =
+        `🎵 Timestamp Otomatis - Surah ${currentSurahId}`;
+
+    timestamps.length = 0;
+    renderTimestamps();
+    updateCount();
+}
+        const audio = document.getElementById('audio');
+        const timestamps = [];
+        let isPlaying = false;
+        
+        loadSurah();
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '00:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+        }
+
+        function playPause() {
+            if (isPlaying) {
+                audio.pause();
+                document.getElementById('playPauseBtn').innerHTML = '▶ Play';
+            } else {
+                audio.play();
+                document.getElementById('playPauseBtn').innerHTML = '⏸ Pause';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function recordTimestamp() {
+            const currentTime = audio.currentTime;
+            const ayatNumber = timestamps.length + 1;
+            
+            timestamps.push({
+                ayat: ayatNumber,
+                timestamp: currentTime,
+                formatted: formatTime(currentTime)
+            });
+
+            renderTimestamps();
+            updateCount();
+            
+            const btn = document.querySelector('.record-btn');
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(function() { btn.style.transform = 'scale(1)'; }, 100);
+            
+            console.log('✅ Ayat ' + ayatNumber + ': ' + formatTime(currentTime));
+        }
+
+        function renderTimestamps() {
+            const container = document.getElementById('timestamps');
+            let html = '';
+            for (let i = 0; i < timestamps.length; i++) {
+                const ts = timestamps[i];
+                html += '<div class="timestamp-item"><span><strong>Ayat ' + ts.ayat + ':</strong> ' + ts.formatted + ' (' + ts.timestamp.toFixed(3) + 's)</span><button onclick="deleteTimestamp(' + i + ')" style="padding: 5px 10px; background: #f56565; color: white; border: none; border-radius: 5px; cursor: pointer;">🗑</button></div>';
+            }
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function deleteTimestamp(index) {
+            if (confirm('Hapus timestamp ayat ' + (index + 1) + '?')) {
+                timestamps.splice(index, 1);
+                for (let i = 0; i < timestamps.length; i++) {
+                    timestamps[i].ayat = i + 1;
+                }
+                renderTimestamps();
+                updateCount();
+            }
+        }
+
+        function updateCount() {
+            document.getElementById('countAyat').textContent = timestamps.length;
+        }
+
+        function resetTimestamps() {
+            if (confirm('Hapus semua timestamp?')) {
+                timestamps.length = 0;
+                audio.pause();  // ← Stop audio
+                audio.currentTime = 0;  // ← Reset waktu ke 0
+                isPlaying = false;  // ← Reset status play
+                document.getElementById('playPauseBtn').innerHTML = '▶ Play';  // ← Update tombol
+                renderTimestamps();
+                updateCount();
+                document.getElementById('currentTime').textContent = '00:00';  // ← Update tampilan waktu
+            }
+        }
+
+        function exportJSON() {
+            const data = {
+                surahId: currentSurahId,
+                totalAyat: timestamps.length,
+                audioDuration: audio.duration,
+                timestamps: timestamps.map(ts => ({
+                    ayat: ts.ayat,
+                    time: parseFloat(ts.timestamp.toFixed(3))
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `timestamp-${currentSurahId}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            console.log('📥 JSON exported:', data);
+            alert(`JSON berhasil diunduh: timestamp-${currentSurahId}.json`);
+        }
+
+        document.addEventListener('keydown', function(e) {
+
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+        e.preventDefault();
+        recordTimestamp();
+    }
+
+    if (e.code === 'Enter') {
+        e.preventDefault();
+        playPause();
+    }
+});
+
+        audio.addEventListener('timeupdate', function() {
+            document.getElementById('currentTime').textContent = formatTime(audio.currentTime);
+        });
+
+        audio.addEventListener('loadedmetadata', function() {
+            document.getElementById('duration').textContent = formatTime(audio.duration);
+        });
+    </script>
+</body>
+</html>
